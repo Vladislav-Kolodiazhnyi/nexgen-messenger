@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexGen Secure Messenger | ChaCha20-Poly1305</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <div class="language-switch">
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+        <button onclick="setLanguage('ua')" class="lang-btn active">UA</button>
+    </div>
+
+    <div id="login-screen" class="container">
+        <div class="card login-card">
+            <h1 data-lang="login_title">Вхід у систему</h1>
+            <p class="subtitle">NexGen IT Solutions Security System</p>
+            
+            <div class="form-group">
+                <label data-lang="username_label">Ім'я користувача</label>
+                <div class="input-wrapper">
+                    <input type="text" id="username" placeholder="user_01" data-ph="ph_username">
+                    <i class="fa-solid fa-user input-icon"></i>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label data-lang="password_label">Пароль</label>
+                <div class="input-wrapper">
+                    <input type="password" id="password" placeholder="••••••••" data-ph="ph_password">
+                    <button class="icon-btn toggle-pass" onclick="togglePass('password', this)">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button id="login-btn" class="btn-primary" data-lang="btn_login">
+                <i class="fa-solid fa-right-to-bracket"></i> <span data-text="btn_login">Увійти</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="app-screen" class="container hidden">
+        
+        <header class="app-header">
+            <div class="user-info">
+                <span data-lang="user_prefix">Користувач:</span> 
+                <span id="current-user" class="highlight">admin</span>
+            </div>
+            <button id="logout-btn" class="btn-danger-outline" data-lang="btn_logout">
+                <i class="fa-solid fa-power-off"></i> Вихід
+            </button>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('encrypt-tab')">
+                <i class="fa-solid fa-lock"></i> <span data-lang="tab_encrypt">Шифрування</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('decrypt-tab')">
+                <i class="fa-solid fa-file-shield"></i> <span data-lang="tab_decrypt">Вхідні файли</span>
+            </button>
+        </div>
+
+        <div id="encrypt-tab" class="tab-content">
+            <div class="card">
+                <h2 data-lang="encrypt_header">Шифрування повідомлення</h2>
+                
+                <div class="form-group">
+                    <label>
+                        <span data-lang="key_label">Секретний ключ</span>
+                        <span class="link-action" onclick="generateKey('enc-key')" title="Згенерувати ключ">
+                            <i class="fa-solid fa-dice"></i>
+                        </span>
+                    </label>
+                    <div class="input-wrapper">
+                        <input type="password" id="enc-key" placeholder="Введіть ключ..." data-ph="ph_key">
+                        <button class="icon-btn toggle-pass" onclick="togglePass('enc-key', this)">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label data-lang="message_label">Текст повідомлення</label>
+                    <textarea id="enc-text" rows="4" placeholder="Введіть текст..." data-ph="ph_text"></textarea>
+                </div>
+
+                <div class="actions">
+                    <button id="btn-encrypt" class="btn-primary">
+                        <i class="fa-solid fa-lock"></i> <span data-lang="btn_encrypt_action">Зашифрувати</span>
+                    </button>
+                </div>
+
+                <div class="result-box hidden" id="enc-result-box">
+                    <div class="result-header">
+                        <label data-lang="enc_result_label">Результат (Nonce + Ciphertext + Tag):</label>
+                        <button class="icon-btn copy-btn" onclick="copyResult('enc-output')" title="Копіювати">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                    <textarea id="enc-output" readonly></textarea>
+                    
+                    <div class="send-block">
+                        <h3 data-lang="send_header">Дії з файлом</h3>
+                        
+                        <div class="row">
+                            <select id="recipient-select">
+                                <option value="all">Всім співробітникам</option>
+                                <option value="user_ceo">Генеральний директор</option>
+                                <option value="user_secretary">Секретар</option>
+                                <option value="user_lawyer">Юрист</option>
+                                <option value="user_chief_accountant">Головний бухгалтер</option>
+                                <option value="dept_finance">Бухгалтерія</option>
+                                <option value="user_economist">Економіст</option>
+                                <option value="user_head_hr">Керівник відділу кадрів</option>
+                                <option value="dept_hr">Відділ кадрів</option>
+                                <option value="user_head_sales">Керівник відділу продажу</option>
+                                <option value="dept_sales">Відділ продажу</option>
+                                <option value="user_cto">Технічний директор</option>
+                                <option value="dept_dev">Відділ розробки</option>
+                                <option value="dept_qa">Відділ тестування</option>
+                                <option value="dept_design">Відділ дизайну</option>
+                                <option value="dept_it">IT-відділ</option>
+                                <option value="user_head_cybersec">Керівник від. кібербезпеки</option>
+                                <option value="dept_security">Відділ кібербезпеки</option>
+                                <option value="user_head_security">Керівник від. охорони</option>
+                                <option value="dept_guard">Відділ охорони</option>
+                            </select>
+                            
+                            <input id="file-name" type="text" placeholder="file.txt" data-ph="ph_filename">
+                        </div>
+
+                        <div class="row actions-row">
+                            <button id="btn-send" class="btn-success">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> <span data-lang="btn_send">Зберегти на сервер</span>
+                            </button>
+                            <button id="btn-download" class="btn-outline">
+                                <i class="fa-solid fa-download"></i> <span data-lang="btn_download">Скачати</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="decrypt-tab" class="tab-content hidden">
+            <div class="card">
+                <h2 data-lang="decrypt_header">Розшифрування файлів</h2>
+
+                <div class="server-files">
+                    <h3 data-lang="server_files_header">Файли на сервері:</h3>
+                    <ul id="file-list">
+                        <li class="empty-msg" data-lang="no_files">Немає нових повідомлень</li>
+                    </ul>
+                </div>
+
+                <div class="upload-section">
+                    <label for="file-upload" class="custom-file-upload">
+                        <i class="fa-solid fa-folder-open"></i> <span data-lang="btn_upload_file">Відкрити локальний файл</span>
+                    </label>
+                    <input id="file-upload" type="file" accept=".txt,.enc"/>
+                    <span id="file-name-display"></span>
+                </div>
+
+                <hr>
+
+                <div class="form-group">
+                    <label data-lang="decrypt_input_label">Вміст зашифрованого файлу</label>
+                    <textarea id="dec-input" rows="3" placeholder="Вставте шифр сюди..." data-ph="ph_cipher"></textarea>
+                </div>
+
+                <div class="form-group password-group">
+                    <label data-lang="key_label_dec">Секретний ключ</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="dec-key" placeholder="Введіть ключ..." data-ph="ph_key">
+                        <button class="icon-btn toggle-pass" onclick="togglePass('dec-key', this)">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button id="btn-decrypt" class="btn-primary">
+                    <i class="fa-solid fa-unlock-keyhole"></i> <span data-lang="btn_decrypt_action">Розшифрувати</span>
+                </button>
+
+                <div id="dec-result-box" class="result-box hidden">
+                    <label data-lang="dec_result_label">Розшифрований текст:</label>
+                    <div id="dec-status" class="status-indicator"></div> 
+                    <textarea id="dec-output" readonly class="success-text"></textarea>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
